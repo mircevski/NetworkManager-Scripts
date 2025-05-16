@@ -1,0 +1,51 @@
+#!/bin/bash
+
+[[ -z ${CONNECTION_UUID} ]] && exit 0
+
+DEVICE=${1}
+STATE=${2}
+CWD=$(dirname "$0")
+PROC=$(basename "$0")
+
+LOG='/var/log/NetworkManager_dispatcher.d.log'
+
+#UNTRUSTED="shared/untrusted"
+NETWORKS="shared/trusted_networks.lst"
+TYPES="shared/untrusted_types.lst"
+AUTOVPN="ZeronetVPN"
+
+CONNECTION_NAME=$(nmcli --fields connection.id connection show uuid ${CONNECTION_UUID} | cut -d":" -f2 | sed 's/^[ ]*//g')
+CONNECTION_TYPE=$(nmcli --fields connection.type connection show uuid ${CONNECTION_UUID} | cut -d":" -f2 | sed 's/^[ ]*//g')
+CONNECTION_NAME_TRUSTED=$([[ -n $(grep ${CONNECTION_UUID} "${CWD}"/"${NETWORKS}") ]] && echo true || echo false)
+CONNECTION_TYPE_TRUSTED=$([[ -z $(grep ${CONNECTION_TYPE} "${CWD}"/"${TYPES}") ]] && echo true || echo false)
+CONNECTION_OVERALL_TRUSTED="${CONNECTION_TYPE_TRUSTED}${CONNECTION_NAME_TRUSTED}"
+
+#falsefalse = UNTRUSTED
+#falsetrue  = TRUSTED
+#truefalse  = TRUSTED
+#truetrue   = TRUSTED
+
+FIREWALL_ZONE_TRUSTED="public"
+FIREWALL_ZONE_UNTRUSTED="block"
+
+echo "$(date +"%F %T") $PROC: DEBUG, Interface: \"$DEVICE\", State: \"$STATE\", Network: \"${CONNECTION_NAME}\", TrustedNetwork: \"${CONNECTION_NAME_TRUSTED}\", Type: \"$CONNECTION_TYPE\", TrustedType: \"${CONNECTION_TYPE_TRUSTED}\", OverallTrust: \"${CONNECTION_OVERALL_TRUSTED}\"" >>${LOG}
+
+[[ "${CONNECTION_OVERALL_TRUSTED}" != "falsefalse" ]] && exit 0
+
+echo -n "$(date +"%F %T") $PROC: INFO, Action: \"checking in which state we are\", Result: '${STATE}'" >>${LOG}
+case $STATE in
+	"up")
+		echo ", Action: \"adding network to '${FIREWALL_ZONE_UNTRUSTED}' zone\", PostAction: \"enabling VPN '${AUTOVPN}'\"" >>${LOG}
+		nmcli connection modify ${CONNECTION_UUID} connection.zone ${FIREWALL_ZONE_UNTRUSTED}
+		nmcli connection up ${AUTOVPN}
+	;;
+	"down")
+		echo ", Action: \"exiting\", PostAction: \"disabling automatic VPN '${AUTOVPN}', if it was up\"" >>${LOG}
+		nmcli connection down ${AUTOVPN}
+		exit 0
+	;;
+	"dhcp4-change")
+		echo ", Action: \"exiting\", Note: \"If any VPN with no 'roaming' support is up, it may hang.\"" >>${LOG}
+		exit 0
+	;;
+esac

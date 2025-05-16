@@ -58,3 +58,12 @@ less /var/log/NetworkManager_dispatcher.d.log
 ## Further information
 
 More information about the NetworkManager dispatcher can be found in the [Arch Wiki](https://wiki.archlinux.org/index.php/NetworkManager#Network_services_with_NetworkManager_dispatcher).
+
+## (proposed) Automatic Firewall and VPN for untrusted networks
+
+> Rationale: enabling a strict NetworkManager firewall zone (e.g. `block`) for certain types of networks (e.g. `wireless`), if we consider them not to be trusted by the following logic.
+There are 2 levels of decision. First, if the network *type* is NOT explicitly listed as untrusted, any network of that type will be trusted from this perspective and no security measures will be enabled. This way we would be avoiding network types like `wired` or various types of VPN to trigger a strict firewall zone.
+
+If a *type* explicitly listed as untrusted, then the second level of decision will get hit, by explicitly listing certain *networks* as trusted. Again, this is mostly the case of `wireless` ones.
+
+Additionally, a VPN connection can be dialed automatically after the `block` zone has been applied.
