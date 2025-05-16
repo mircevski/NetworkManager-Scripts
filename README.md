@@ -74,5 +74,5 @@ Decision logic:
 | false | false | UNTRUSTED | FW zone: 'block' | AutoVPN  |
 | false | true | TRUSTED | exit | no AutoVPN  |
 | true | false | TRUSTED | exit | no AutoVPN  |
-| true | false | TRUSTED | exit | no AutoVPN  |
+| true | true | TRUSTED | exit | no AutoVPN  |
 
