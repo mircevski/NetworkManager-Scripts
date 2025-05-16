@@ -72,7 +72,7 @@ Decision logic:
 | Type  Trusted  | Network Trusted  |  Overall Trust  | Action   | PostAction   |
 |---|---|---|---|---|
 | false | false | UNTRUSTED | FW zone: 'block' | AutoVPN  |
-| false | true | TRUSTED | exit | no AutoVPN  |
-| true | false | TRUSTED | exit | no AutoVPN  |
-| true | true | TRUSTED | exit | no AutoVPN  |
+| false | true | TRUSTED | FW zone: 'public' | no AutoVPN  |
+| true | false | TRUSTED | FW zone: 'public' | no AutoVPN  |
+| true | true | TRUSTED | FW zone: 'public' | no AutoVPN |
 
