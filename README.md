@@ -67,3 +67,12 @@ There are 2 levels of decision. First, if the network *type* is NOT explicitly l
 If a *type* explicitly listed as untrusted, then the second level of decision will get hit, by explicitly listing certain *networks* as trusted. Again, this is mostly the case of `wireless` ones.
 
 Additionally, a VPN connection can be dialed automatically after the `block` zone has been applied.
+
+Decision logic:
+| Type  Trusted  | Network Trusted  |  Overall Trust  | Action   | PostAction   |
+|---|---|---|---|---|
+| false | false | UNTRUSTED | FW zone: 'block' | AutoVPN  |
+| false | true | TRUSTED | exit | no AutoVPN  |
+| true | false | TRUSTED | exit | no AutoVPN  |
+| true | false | TRUSTED | exit | no AutoVPN  |
+

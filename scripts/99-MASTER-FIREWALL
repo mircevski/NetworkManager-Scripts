@@ -9,7 +9,6 @@ PROC=$(basename "$0")
 
 LOG='/var/log/NetworkManager_dispatcher.d.log'
 
-#UNTRUSTED="shared/untrusted"
 NETWORKS="shared/trusted_networks.lst"
 TYPES="shared/untrusted_types.lst"
 AUTOVPN="ZeronetVPN"
@@ -20,17 +19,12 @@ CONNECTION_NAME_TRUSTED=$([[ -n $(grep ${CONNECTION_UUID} "${CWD}"/"${NETWORKS}"
 CONNECTION_TYPE_TRUSTED=$([[ -z $(grep ${CONNECTION_TYPE} "${CWD}"/"${TYPES}") ]] && echo true || echo false)
 CONNECTION_OVERALL_TRUSTED="${CONNECTION_TYPE_TRUSTED}${CONNECTION_NAME_TRUSTED}"
 
-#falsefalse = UNTRUSTED
-#falsetrue  = TRUSTED
-#truefalse  = TRUSTED
-#truetrue   = TRUSTED
-
 FIREWALL_ZONE_TRUSTED="public"
 FIREWALL_ZONE_UNTRUSTED="block"
 
 echo "$(date +"%F %T") $PROC: DEBUG, Interface: \"$DEVICE\", State: \"$STATE\", Network: \"${CONNECTION_NAME}\", TrustedNetwork: \"${CONNECTION_NAME_TRUSTED}\", Type: \"$CONNECTION_TYPE\", TrustedType: \"${CONNECTION_TYPE_TRUSTED}\", OverallTrust: \"${CONNECTION_OVERALL_TRUSTED}\"" >>${LOG}
 
-[[ "${CONNECTION_OVERALL_TRUSTED}" != "falsefalse" ]] && exit 0
+[[ "${CONNECTION_OVERALL_TRUSTED}" != "falsefalse" ]] && nmcli connection modify ${CONNECTION_UUID} connection.zone ${FIREWALL_ZONE_TRUSTED} && exit 0
 
 echo -n "$(date +"%F %T") $PROC: INFO, Action: \"checking in which state we are\", Result: '${STATE}'" >>${LOG}
 case $STATE in
